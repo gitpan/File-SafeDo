@@ -1,0 +1,6 @@
+Revision history for Perl extension File::SafeDO
+
+0.06  Tue Mar  12 12:42:10 PST 2004
+	initial release
+
+	adapteded from Net::DNSBL::Utilities v0.02

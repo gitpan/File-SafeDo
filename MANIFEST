@@ -1,0 +1,8 @@
+MANIFEST
+README
+Makefile.PL
+SafeDO.pm
+Changes
+GPL
+local/test.conf
+t/doit.t
