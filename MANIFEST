@@ -4,5 +4,7 @@ Makefile.PL
 SafeDO.pm
 Changes
 GPL
+local/my.conf
 local/test.conf
-t/doit.t
+t/my.t
+t/test.t

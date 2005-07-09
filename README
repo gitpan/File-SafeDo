@@ -6,20 +6,31 @@ SYNOPSIS
             DO
       );
 
-      $rv = DO($file)
+      $rv = DO($file,[optional no warnings string])
 
 DESCRIPTION
-    * $rv = DO($file);
+    * $rv = DO($file,[optional] "no warnings string");
         This is a fancy 'do file'. It first checks that the file exists and
         is readable, then does a 'do file' to pull the variables and
         subroutines into the current name space. The 'do' is executed with
         full perl warnings so that syntax and construct errors are reported
-        to STDERR.
+        to STDERR. A string of no warnings may optionally be specified as a
+        second argument. This is equivalent to saying:
 
-          input:        file/path/name
+          no warnings qw(string of no values);
+
+        See: man perllexwarnings for a full listing of warning names.
+
+          input:        file/path/name,
+                    [optional] string of "no" warnings
           returns:      last value in file
                     or  undef on error
                     prints warning
+
+          i.e. DO('myfile','once redefine');
+
+        This will execute 'myfile' safely and suppress 'once' and 'redefine'
+        warnings to STDERR.
 
 DEPENDENCIES
             none

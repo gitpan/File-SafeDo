@@ -4,13 +4,11 @@ package File::SafeDO;
 use strict;
 #use diagnostics;
 
-use vars qw(
-	$VERSION @ISA @EXPORT_OK
-);
+use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.03 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.11 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
         DO
@@ -28,38 +26,57 @@ File::SafeDO -- safer do file for perl
         DO
   );
 
-  $rv = DO($file)
+  $rv = DO($file,[optional no warnings string])
 
 =head1 DESCRIPTION
 
 =over 4
 
-=item * $rv = DO($file);
+=item * $rv = DO($file,[optional] "no warnings string");
 
 This is a fancy 'do file'. It first checks that the file exists and is
 readable, then does a 'do file' to pull the variables and subroutines into
 the current name space. The 'do' is executed with full perl warnings so that 
-syntax and construct errors are reported to STDERR.
+syntax and construct errors are reported to STDERR. A string of B<no
+warnings> may optionally be specified as a second argument. This is
+equivalent to saying:
 
-  input:	file/path/name
+  no warnings qw(string of no values);
+
+See: man perllexwarnings for a full listing of warning names.
+
+  input:	file/path/name,
+	    [optional] string of "no" warnings
   returns:	last value in file
 	    or	undef on error
 	    prints warning
+
+  i.e. DO('myfile','once redefine');
+
+This will execute 'myfile' safely and suppress 'once' and 'redefine'
+warnings to STDERR.
 
 =back
 
 =cut
 
-sub DO($) {
-  my $file = shift;
+sub DO($;$) {
+  my($file,$nowarnings) = @_;
   return undef unless
 	$file &&
 	-e $file &&
 	-f $file &&
 	-r $file;
   $_ = $Config{perlpath};		# bring perl into scope
-  return undef if eval q|system($_, '-w', $file)|;
-  do $file;
+  if ($nowarnings) {
+    return undef if eval q|system($_, '-Mwarnings', "-M-warnings qw($nowarnings)", $file)|;
+  } else {
+    return undef if eval q|system($_, '-w', $file)|;
+  }
+# poke anonymous subroutine into calling package so vars and subs will import
+  my $caller = caller;
+# execute 'do $file;' in calling package
+   &{eval "package $caller; sub { my \$file = shift; do \$file;};";}($file);
 }
 
 =head1 DEPENDENCIES
