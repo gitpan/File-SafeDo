@@ -1,5 +1,10 @@
 Revision history for Perl extension File::SafeDO
 
+0.12  Sun Nov 16 15:37:50 PST 2008
+	Add the capability to INCLUDE additional file(s)
+	within a returned HASH object with the "INCLUDE"
+	and the doINCLUDE function.
+
 0.11  Tue Jul  5 19:05:39 PDT 2005
 	Add the capability to suppress certain warnings during
 	the DO process with an optional command switch.

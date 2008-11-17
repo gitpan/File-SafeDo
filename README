@@ -4,6 +4,7 @@ NAME
 SYNOPSIS
       use File::SafeDO qw(
             DO
+            doINCLUDE
       );
 
       $rv = DO($file,[optional no warnings string])
@@ -32,17 +33,32 @@ DESCRIPTION
         This will execute 'myfile' safely and suppress 'once' and 'redefine'
         warnings to STDERR.
 
+    * $rv = doINCLUDE($file,[optional] "no warnings string");
+        The function is similar to DO above with the addition of recursive
+        loads.
+
+        Function will recursively load a file which returns a hash pointer
+        with the a key of the form:
+
+                'INCLUDE' => somefile. 
+
+        The file which it loads may contain only HASHs or SUBs. The HASH
+        KEYS will be promoted into the parent hash, augmenting and replacing
+        existing keys already present. Subroutines are simply imported into
+        the name space as is the case with a 'do' or 'require'.
+
 DEPENDENCIES
             none
 
 EXPORT_OK
             DO
+            doINCLUDE
 
 AUTHOR
     Michael Robinton, michael@bizsystems.com
 
 COPYRIGHT
-    Copyright 2003 - 2004, Michael Robinton & BizSystems This program is
+    Copyright 2003 - 2008, Michael Robinton & BizSystems This program is
     free software; you can redistribute it and/or modify it under the terms
     of the GNU General Public License as published by the Free Software
     Foundation; either version 2 of the License, or (at your option) any

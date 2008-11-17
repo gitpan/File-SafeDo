@@ -8,10 +8,11 @@ use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.11 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.12 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
         DO
+	doINCLUDE
 );
 
 use Config;
@@ -24,6 +25,7 @@ File::SafeDO -- safer do file for perl
 
   use File::SafeDO qw(
         DO
+	doINCLUDE
   );
 
   $rv = DO($file,[optional no warnings string])
@@ -56,11 +58,9 @@ See: man perllexwarnings for a full listing of warning names.
 This will execute 'myfile' safely and suppress 'once' and 'redefine'
 warnings to STDERR.
 
-=back
-
 =cut
 
-sub DO($;$) {
+sub xDO($;$) {
   my($file,$nowarnings) = @_;
   return undef unless
 	$file &&
@@ -79,6 +79,65 @@ sub DO($;$) {
    &{eval "package $caller; sub { my \$file = shift; do \$file;};";}($file);
 }
 
+sub DO($;$) {
+  my($file,$nowarnings) = @_;
+  my $caller = caller;
+  @_ = ($file,$nowarnings,$caller,0);
+  goto &_doFILE;
+}
+
+=item * $rv = doINCLUDE($file,[optional] "no warnings string");
+
+The function is similar to B<DO> above with the addition of recursive loads.
+
+Function will recursively load a file which returns a hash pointer with the
+a key of the form:
+ 
+	'INCLUDE' => somefile. 
+
+The file which it loads may contain only HASHs or SUBs. The HASH KEYS will
+be promoted into the parent hash, augmenting and replacing existing keys
+already present. Subroutines are simply imported into the name
+space as is the case with a 'do' or 'require'.
+
+=back
+
+=cut
+
+sub doINCLUDE($;$) {
+  my($file,$nowarnings) = @_;
+  my $caller = caller;
+  @_ = ($file,$nowarnings,$caller,1);
+  goto &_doFILE;
+}
+
+sub _doFILE($$$$) {
+  my($file,$nowarnings,$caller,$recurs) = @_;
+  return undef unless
+	$file &&
+	-e $file &&
+	-f $file &&
+	-r $file;
+  $_ = $Config{perlpath};		# bring perl into scope
+  if ($nowarnings) {
+    return undef if eval q|system($_, '-Mwarnings', "-M-warnings qw($nowarnings)", $file)|;
+  } else {
+    return undef if eval q|system($_, '-w', $file)|;
+  }
+# poke anonymous subroutine into calling package so vars and subs will import
+# execute 'do $file;' in calling package
+  my $rv = &{eval "package $caller; sub { my \$file = shift; do \$file;};";}($file);
+  return $rv unless $recurs && 
+	UNIVERSAL::isa($rv,'HASH') &&
+	exists $rv->{INCLUDE};
+  my $rrv = &_doFILE($rv->{INCLUDE},$nowarnings,$caller,1);
+  return $rv unless $rrv &&
+	UNIVERSAL::isa($rv,'HASH');
+  my @keys = keys %{$rrv};
+  @{$rv}{@keys} = @{$rrv}{@keys};
+  return $rv;
+}
+
 =head1 DEPENDENCIES
 
 	none
@@ -86,6 +145,7 @@ sub DO($;$) {
 =head1 EXPORT_OK
 
 	DO
+	doINCLUDE
 
 =head1 AUTHOR
 
@@ -93,7 +153,7 @@ Michael Robinton, michael@bizsystems.com
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2004, Michael Robinton & BizSystems
+Copyright 2003 - 2008, Michael Robinton & BizSystems
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or 

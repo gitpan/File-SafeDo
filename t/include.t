@@ -5,12 +5,12 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..9\n"; }
 END {print "not ok 1\n" unless $loaded;}
 
 #use diagnostics;
 use File::SafeDO qw(
-	DO
+	doINCLUDE
 );
 
 $loaded = 1;
@@ -23,7 +23,7 @@ print "ok 1\n";
 
 $test = 2;
 
-my $config = './local/my.conf';
+my $config = './local/test.conf';
 
 sub ok {
   print "ok $test\n";
@@ -31,8 +31,8 @@ sub ok {
 }
 
 ## test 2-3	suck in and check config file for domain1.com domain2.net
-#	suppress 'once'
-my $contents = DO($config,'once');
+
+my $contents = doINCLUDE($config);
 print "could not open configuration file $config\nnot "
 	unless $contents;
 &ok;
@@ -41,19 +41,37 @@ print "missing configuration file variables domain1.com, domain2.net\nnot "
 	unless exists $contents->{'domain1.com'} && exists $contents->{'domain2.net'};
 &ok;
 
-# test 4 check is hash
-print '$rv isa ',(ref $contents),"\nnot "
-	unless ref $contents eq 'HASH';
+# test 4 include local/incfile.conf
+$config = './local/my.conf';
+
+$contents = doINCLUDE($config,'once');
+print "could not open configuration file $config\nnot "
+        unless $contents;
 &ok;
 
-# test 5 check is OTHER
-my $tv = bless $contents, 'OTHER';
-print '$rv isa ',(ref $tv),"\nnot "
-	unless ref $contents eq 'OTHER';
+# test 5 check for key1
+print "could not find KEY1\nnot "
+	unless exists $contents->{KEY1} &&
+		$contents->{KEY1} eq 'is key1';
 &ok;
 
-# test 6 check is still HASH
-print "\$rv is not a HASH \nnot "
-	unless UNIVERSAL::isa($tv,'HASH');
+# test 6 check for key2
+print "could not find KEY2\nnot "
+	unless exists $contents->{KEY2} &&
+		$contents->{KEY2} eq 'is key2';
 &ok;
 
+# test 7 check subroutine returned from nested call
+print "sub returnstuff not found\nnot "
+	unless exists $main::{returnstuff};
+&ok;
+
+# test 8-9 check that returnstuff actually works
+my $rv = eval{returnstuff()};
+print $@, "\nnot "
+	if $@;
+&ok;
+
+print "got: $rv, exp: stuff\nnot "
+	unless $rv eq 'stuff';
+&ok;
