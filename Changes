@@ -1,6 +1,9 @@
 Revision history for Perl extension File::SafeDO
 
-0.13 Mon Jan 27 11:59:58 PST 2014
+0.14  Mon Jan 27 12:47:58 PST 2014
+        correct typo in Makefile.pm
+
+0.13  Mon Jan 27 11:59:58 PST 2014
         modify Makefile.PL to bypass missing 'pod2text'
 
 0.12  Sun Nov 16 15:37:50 PST 2008

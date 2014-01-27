@@ -8,7 +8,7 @@ use vars qw($VERSION @ISA @EXPORT_OK);
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = do { my @r = (q$Revision: 0.13 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+$VERSION = do { my @r = (q$Revision: 0.14 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 @EXPORT_OK = qw(
         DO
@@ -153,7 +153,7 @@ Michael Robinton, michael@bizsystems.com
 
 =head1 COPYRIGHT
 
-Copyright 2003 - 2008, Michael Robinton & BizSystems
+Copyright 2003 - 2014, Michael Robinton & BizSystems
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or 
